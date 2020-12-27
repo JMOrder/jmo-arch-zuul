@@ -1,0 +1,133 @@
+spring:
+  application:
+    name: zuul-gateway
+  output:
+    ansi:
+      enabled: always
+
+server:
+  port: 8080
+
+endpoints:
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+  health:
+    sensitive: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  security:
+    enabled: false
+
+zuul:
+  host:
+    connect-timeout-millis: 5000000
+    socket-timeout-millis: 5000000
+  sensitiveHeaders: Cookie,Set-Cookie
+  health:
+    enabled: true
+  routes:
+    authService:
+      path: /auth/**
+      serviceId: auth-service
+      sensitiveHeaders:
+      strip-prefix: true
+    chatService:
+      path: /chat/**
+      serviceId: chat-service
+      strip-prefix: true
+    mainService:
+      path: /**
+      serviceId: main-service
+      strip-prefix: true
+  debug:
+    request: true
+
+eureka:
+  instance:
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 30
+    leaseExpirationDurationInSeconds: 90
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    registryFetchIntervalSeconds: 30
+    instanceInfoReplicationIntervalSeconds: 30
+    initialInstanceInfoReplicationIntervalSeconds: 40
+    eurekaServiceUrlPollIntervalSeconds: 300
+    eurekaServerReadTimeoutSeconds: 8
+    eurekaServerConnectTimeoutSeconds: 5
+    eurekaServerTotalConnections: 200
+    eurekaServerTotalConnectionsPerHost: 50
+    heartbeatExecutorThreadPoolSize: 2
+    heartbeatExecutorExponentialBackOffBound: 10
+    cacheRefreshExecutorThreadPoolSize: 2
+    cacheRefreshExecutorExponentialBackOffBound: 10
+    gZipContent: true
+    preferSameZoneEureka: true
+    filterOnlyUpInstances: true
+    healthcheck:
+      enabled: true
+
+host:
+  maxTotalConnections: 200
+  maxPerRouteConnections: 20
+ribbon:
+  eager-load:
+    enabled: true
+  ConnectTimeout: 3000
+  ReadTimeout: 60000
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 50000
+
+#Services
+auth-service:
+  ribbon:
+    listOfServers: localhost:3001
+chat-service:
+  ribbon:
+    listOfServers: localhost:3002
+main-service:
+  ribbon:
+    listOfServers: localhost:3000
+#Eco Systems
+hystrix-turbine:
+  ribbon:
+    listOfServers: localhost:8081
+
+jmo:
+  auth:
+    jwt:
+      secret: BFAC53393B0C66AE1B27F4094D00B03F03B19A42271C8112E81FD3E2CC93E954
+      rsa-private-key: |
+        -----BEGIN PRIVATE KEY-----
+        MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAmyhujBh2ZXJHjOG7
+        yBI21Sx8IYaEJFchusC8P8Q4djnii3jwXu35BFQnNRIy1RiuN4/GBrZlPXvOB0Zd
+        JM5gywIDAQABAkB2v5UL59UFg1c7fbBoSXhp4qgGSJtt7LnF4qiw7Q6BfE7P+A9a
+        Bvc2c5V6fNHU/xq1awyCqCnkMjmuOmGqcIPBAiEAyRKIigCHGah3oIsFchb63Dle
+        f0LzmVc83GbMgFkm8NsCIQDFiv36yfWPai3Hr+2OcJgXE4ck8qwaFCOowF/552Ca
+        0QIgKFFMCYfjjxSFsC5QEDllYcUrGo99MvEYJgWC2fWGZmMCIQC+sQ27qnmBl93Z
+        hdqsRcSLgi5TXG8GPaqunAYKF3EKAQIhAKh5YZ/i25WBMaJPMOOQP4aBvC7WJOEV
+        PtH+DX36uYrn
+        -----END PRIVATE KEY-----
+      rsa-public-key: |
+        -----BEGIN PUBLIC KEY-----
+        MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJsobowYdmVyR4zhu8gSNtUsfCGGhCRX
+        IbrAvD/EOHY54ot48F7t+QRUJzUSMtUYrjePxga2ZT17zgdGXSTOYMsCAwEAAQ==
+        -----END PUBLIC KEY-----
+      duration: 900000
+
+logging.level.org.springframework.web.filter:
+  CommonsRequestLoggingFilter: DEBUG
